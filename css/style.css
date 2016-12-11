@@ -1,0 +1,43 @@
+body {
+  min-height: 2000px;
+  padding-top: 70px;
+}
+ul{
+	-webkit-padding-start:0px;
+}
+ul li{
+	list-style-type: none;
+}
+.icon-lg{
+	font-size:2em;
+}
+.postList > li{
+	border-bottom: 1px solid #ddd;
+	line-height: 2;
+    padding: 12px 0px;
+}
+.countList li{
+	display: inline-block;
+	width: 80px;
+	padding: 1px;
+	text-align: center;
+}
+.countList li >label{
+	color: brown;
+}
+.countList li >p{
+	color:blue;
+}
+.scoreBlock li{
+	display: block;
+}
+.taglist{
+
+}
+.taglist li{
+	display: inline-block;
+	padding: 4px;
+	color:#39739d;
+	background-color: #E1ECF4;
+	font-size: 12px;
+}

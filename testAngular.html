@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Peer Buds </title>
+	<link rel="stylesheet" type="text/css" href="./assets/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+	
+</head>
+<body ng-app="jsonAsfile" ng-cloak>
+	<div ng-controller="showJsonController">
+		<div class="container">
+			<h1>PEER buds</h1>
+			<!-- items being paged -->
+			<div class="row">
+				<div class="col-sm-12">
+					<ul class="postlist">
+						<li ng-repeat="item in items">
+							<div class="panel panel-default">
+								<div class="panel-heading">
+									<div class="row">
+										<div class="col-sm-12">
+											<label>POST ID:{{item._Id}}</label>	
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-sm-12">
+											<label>POST TITLE:</label><p ng-bind-html="item._Title | unsafe"></p>	
+										</div>
+									</div>
+								</div>
+								<div class="panel-body">
+									<div class="row">
+										<div class="col-sm-12">
+											<div ng-bind-html="item._Body | unsafe"></div>	
+										</div>
+									</div>
+								</div>
+							</div>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<!-- pager -->
+			<ul ng-if="pager.pages.length" class="pagination">
+				<li ng-class="{disabled:pager.currentPage === 1}">
+					<a ng-click="setPage(1)">First</a>
+				</li>
+				<li ng-class="{disabled:pager.currentPage === 1}">
+					<a ng-click="setPage(pager.currentPage - 1)">Previous</a>
+				</li>
+				<li ng-repeat="page in pager.pages" ng-class="{active:pager.currentPage === page}">
+					<a ng-click="setPage(page)">{{page}}</a>
+				</li>                
+				<li ng-class="{disabled:pager.currentPage === pager.totalPages}">
+					<a ng-click="setPage(pager.currentPage + 1)">Next</a>
+				</li>
+				<li ng-class="{disabled:pager.currentPage === pager.totalPages}">
+					<a ng-click="setPage(pager.totalPages)">Last</a>
+				</li>
+			</ul>		
+		</div>
+	</div>
+	<script type="text/javascript" src="assets/angular.min.js"></script>
+	<script type="text/javascript" src="assets/underscore.js"></script>
+	<script type="text/javascript">
+		var myApp= angular.module('jsonAsfile',[]);
+		myApp.factory('jsonFactory', function($http) {  
+			var jsonFactory= {      
+				fromLocal: function(url) {       
+		        //var url = 'src/Badges.json';
+		        var promise = $http.get(url).then(function (response) {
+		        	return response.data;
+		        });      
+		        return promise;
+		    }        
+		};
+		return jsonFactory;
+	});
+		myApp.factory('PagerService',function(){
+			{
+        // service definition
+        var service = {};
+
+        service.GetPager = GetPager;
+
+        return service;
+
+        // service implementation
+        function GetPager(totalItems, currentPage, pageSize) {
+            // default to first page
+            currentPage = currentPage || 1;
+
+            // default page size is 10
+            pageSize = pageSize || 10;
+
+            // calculate total pages
+            var totalPages = Math.ceil(totalItems / pageSize);
+
+            var startPage, endPage;
+            if (totalPages <= 10) {
+                // less than 10 total pages so show all
+                startPage = 1;
+                endPage = totalPages;
+            } else {
+                // more than 10 total pages so calculate start and end pages
+                if (currentPage <= 6) {
+                	startPage = 1;
+                	endPage = 10;
+                } else if (currentPage + 4 >= totalPages) {
+                	startPage = totalPages - 9;
+                	endPage = totalPages;
+                } else {
+                	startPage = currentPage - 5;
+                	endPage = currentPage + 4;
+                }
+            }
+
+            // calculate start and end item indexes
+            var startIndex = (currentPage - 1) * pageSize;
+            var endIndex = Math.min(startIndex + pageSize - 1, totalItems - 1);
+
+            // create an array of pages to ng-repeat in the pager control
+            var pages = _.range(startPage, endPage + 1);
+
+            // return object with all pager properties required by the view
+            return {
+            	totalItems: totalItems,
+            	currentPage: currentPage,
+            	pageSize: pageSize,
+            	totalPages: totalPages,
+            	startPage: startPage,
+            	endPage: endPage,
+            	startIndex: startIndex,
+            	endIndex: endIndex,
+            	pages: pages
+            };
+        }
+    }
+});
+		myApp.filter('unsafe', function($sce) { return $sce.trustAsHtml; });
+		myApp.controller('showJsonController',function(jsonFactory,PagerService,$scope){
+			var postsUrl="Posts.json";
+
+			jsonFactory.fromLocal("src/"+postsUrl).then(function(d){
+				$scope.postsRow=d.posts.row;
+        		var posts_len=d.posts.row.length;/*
+        		for(var i=0;i<posts_len;i++){
+        				//console.log($scope.postsRow[i]._Id);
+        				//$scope.dummyItems =$scope.postsRow[i];       	
+        			}*/
+        			$scope.dummyItems=$scope.postsRow;        		
+        			initController();
+        		});
+
+			$scope.pager = {};
+			$scope.setPage = setPage;
+
+
+
+			function initController() {
+            // initialize to page 1
+            $scope.setPage(1);
+        }
+
+        function setPage(page) {
+        	if (page < 1 || page > $scope.pager.totalPages) {
+        		return;
+        	}
+
+            // get pager object from service
+            $scope.pager = PagerService.GetPager($scope.dummyItems.length, page);
+
+            // get current page of items
+            $scope.items = $scope.dummyItems.slice($scope.pager.startIndex, $scope.pager.endIndex + 1);
+        }
+    });
+
+</script>
+
+</body>
+</html>

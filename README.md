@@ -7,7 +7,7 @@ In this repo
 
 Out of four task ,this project is with task #1
 
-#1 completed items
+Task 1 completed items
 
 ==> listing the post 
 		==> with title
